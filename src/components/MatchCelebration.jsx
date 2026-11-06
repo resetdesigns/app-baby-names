@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import confetti from 'canvas-confetti'
+import { BUZZ, buzz } from '../lib/haptics'
 
 function fireConfetti() {
   const base = { disableForReducedMotion: true, colors: ['#000000', '#ffffff', '#888888'] }
@@ -20,9 +21,10 @@ export default function MatchCelebration({
   onViewAll,
 }) {
   useEffect(() => {
+    buzz(title === "It's decided!" ? BUZZ.final : BUZZ.match)
     const t = fireConfetti()
     return () => clearTimeout(t)
-  }, [name])
+  }, [name, title])
 
   const label = continueLabel ?? (moreCount > 0 ? `Next match (${moreCount} more)` : 'Keep swiping')
 

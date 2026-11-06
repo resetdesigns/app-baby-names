@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import DETAILS from '../data/nameDetails'
+import { otherSpellings } from '../data/variants'
 import { fullNameFor } from '../lib/room'
 import { canSpeak, speak } from '../lib/speak'
 
@@ -9,56 +10,67 @@ const TAP_SLOP = 6 // less movement than this is a tap, which flips the card
 // Keeps presses on inner buttons from starting a card drag.
 const stop = (e) => e.stopPropagation()
 
-// One big name card. Drag it (touch or mouse) or use the buttons on the screen.
+const clamp01 = (n) => Math.max(0, Math.min(1, n))
+
+// One big name card. Drag it right to like, left to pass, or up for maybe (or use the buttons).
 // Tap it (or the info button) to flip it and see the origin, meaning and full-name preview.
-// `leaving` is 'left' | 'right' | null and is controlled by the parent.
+// `leaving` is 'left' | 'right' | 'up' | null and is controlled by the parent.
 export default function NameCard({ name, lastName, leaving, onDecide }) {
-  const [dx, setDx] = useState(0)
+  const [drag, setDrag] = useState({ x: 0, y: 0 })
   const [dragging, setDragging] = useState(false)
   const [flipped, setFlipped] = useState(false)
-  const startX = useRef(null)
+  const start = useRef(null)
 
   const details = DETAILS[name]
+  const spellings = otherSpellings(name)
   const fullName = fullNameFor(name, lastName)
 
   function handlePointerDown(e) {
     if (leaving) return
-    startX.current = e.clientX
+    start.current = { x: e.clientX, y: e.clientY }
     setDragging(true)
     e.currentTarget.setPointerCapture(e.pointerId)
   }
 
   function handlePointerMove(e) {
-    if (startX.current === null) return
-    setDx(e.clientX - startX.current)
+    if (!start.current) return
+    setDrag({ x: e.clientX - start.current.x, y: e.clientY - start.current.y })
   }
 
   function handlePointerUp(e) {
-    if (startX.current === null) return
-    const moved = e.clientX - startX.current
-    startX.current = null
+    if (!start.current) return
+    const dx = e.clientX - start.current.x
+    const dy = e.clientY - start.current.y
+    start.current = null
     setDragging(false)
-    if (Math.abs(moved) > THRESHOLD) {
-      onDecide(moved > 0)
+    if (-dy > THRESHOLD && -dy > Math.abs(dx)) {
+      onDecide('maybe')
       return
     }
-    setDx(0)
-    if (Math.abs(moved) < TAP_SLOP) setFlipped((f) => !f)
+    if (Math.abs(dx) > THRESHOLD) {
+      onDecide(dx > 0 ? 'like' : 'pass')
+      return
+    }
+    setDrag({ x: 0, y: 0 })
+    if (Math.hypot(dx, dy) < TAP_SLOP) setFlipped((f) => !f)
   }
 
   function handlePointerCancel() {
-    startX.current = null
+    start.current = null
     setDragging(false)
-    setDx(0)
+    setDrag({ x: 0, y: 0 })
   }
 
-  const offset = leaving ? (leaving === 'right' ? 520 : -520) : dx
+  const x = leaving === 'right' ? 520 : leaving === 'left' ? -520 : leaving === 'up' ? 0 : drag.x
+  const y = leaving === 'up' ? -640 : leaving ? 0 : Math.min(0, drag.y)
   const style = {
-    transform: `translateX(${offset}px) rotate(${offset / 18}deg)`,
+    transform: `translate(${x}px, ${y}px) rotate(${x / 18}deg)`,
     transition: dragging ? 'none' : 'transform 0.18s ease',
   }
-  const likeOpacity = leaving === 'right' ? 1 : Math.max(0, Math.min(1, dx / THRESHOLD))
-  const passOpacity = leaving === 'left' ? 1 : Math.max(0, Math.min(1, -dx / THRESHOLD))
+  const upwards = -drag.y > Math.abs(drag.x)
+  const likeOpacity = leaving === 'right' ? 1 : upwards ? 0 : clamp01(drag.x / THRESHOLD)
+  const passOpacity = leaving === 'left' ? 1 : upwards ? 0 : clamp01(-drag.x / THRESHOLD)
+  const maybeOpacity = leaving === 'up' ? 1 : upwards ? clamp01(-drag.y / THRESHOLD) : 0
   const lookUp = `https://www.google.com/search?q=${encodeURIComponent(`${name} baby name meaning`)}`
 
   return (
@@ -89,6 +101,7 @@ export default function NameCard({ name, lastName, leaving, onDecide }) {
           ) : (
             <p className="meaning">No details saved for this name.</p>
           )}
+          {spellings.length > 0 && <p className="back-variants">Also spelled: {spellings.join(', ')}</p>}
           {lastName && <p className="back-full">{fullName}</p>}
           <div className="back-actions">
             {canSpeak && (
@@ -121,6 +134,9 @@ export default function NameCard({ name, lastName, leaving, onDecide }) {
       </span>
       <span className="stamp stamp-pass" style={{ opacity: passOpacity }}>
         PASS
+      </span>
+      <span className="stamp stamp-maybe" style={{ opacity: maybeOpacity }}>
+        MAYBE
       </span>
       <button
         className="flip-btn"
