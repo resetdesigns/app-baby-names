@@ -58,3 +58,22 @@ export function saveSeenMatches(room, set) {
     // ignore
   }
 }
+
+// The final pick this person has already been shown the celebration for.
+const finalKey = (room) => `babyNames.finalSeen.${room}`
+
+export function loadSeenFinal(room) {
+  try {
+    return localStorage.getItem(finalKey(room))
+  } catch {
+    return null
+  }
+}
+
+export function saveSeenFinal(room, name) {
+  try {
+    localStorage.setItem(finalKey(room), name)
+  } catch {
+    // ignore
+  }
+}

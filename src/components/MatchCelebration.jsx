@@ -9,25 +9,37 @@ function fireConfetti() {
   }, 220)
 }
 
-// Full-screen "It's a match!" pop. Shows one new match at a time.
-export default function MatchCelebration({ name, moreCount, onContinue, onViewAll }) {
+// Full-screen pop with confetti. Used for new matches and for the final pick.
+export default function MatchCelebration({
+  title = "It's a match!",
+  name,
+  caption = 'You both liked this one.',
+  moreCount = 0,
+  continueLabel,
+  onContinue,
+  onViewAll,
+}) {
   useEffect(() => {
     const t = fireConfetti()
     return () => clearTimeout(t)
   }, [name])
 
+  const label = continueLabel ?? (moreCount > 0 ? `Next match (${moreCount} more)` : 'Keep swiping')
+
   return (
-    <div className="overlay" role="dialog" aria-modal="true" aria-label="It's a match">
+    <div className="overlay" role="dialog" aria-modal="true" aria-label={title}>
       <div className="pop">
-        <p className="pop-title">It&apos;s a match!</p>
+        <p className="pop-title">{title}</p>
         <p className="pop-name">{name}</p>
-        <p className="muted">You both liked this one.</p>
+        <p className="muted">{caption}</p>
         <button className="primary" onClick={onContinue}>
-          {moreCount > 0 ? `Next match (${moreCount} more)` : 'Keep swiping'}
+          {label}
         </button>
-        <button className="ghost" onClick={onViewAll}>
-          See all matches
-        </button>
+        {onViewAll && (
+          <button className="ghost" onClick={onViewAll}>
+            See all matches
+          </button>
+        )}
       </div>
     </div>
   )
