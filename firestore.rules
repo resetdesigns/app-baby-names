@@ -1,30 +1,83 @@
 rules_version = '2';
 
-// Baby Names app: only swipe documents inside a room can be used. Everything else is locked.
+// Baby Names app. Only the documents below, inside a room, can be used. Everything else is locked.
 // There is no login, so the room code is the shared secret. Choose one that is hard to guess.
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    match /rooms/{room}/swipes/{swipeId} {
-      function validRoom() {
-        return room.matches('^[A-Z0-9_-]+$') && room.size() >= 3 && room.size() <= 24;
-      }
+    function validRoom(room) {
+      return room.matches('^[A-Z0-9_-]+$') && room.size() >= 3 && room.size() <= 24;
+    }
 
+    function text(value, min, max) {
+      return value is string && value.size() >= min && value.size() <= max;
+    }
+
+    // rooms/{room}/swipes/{userKey}__{name}: one like or pass per person per name
+    match /rooms/{room}/swipes/{id} {
       function validSwipe() {
         let d = request.resource.data;
         return d.keys().hasOnly(['user', 'userKey', 'name', 'liked', 'createdAt'])
           && d.keys().hasAll(['user', 'userKey', 'name', 'liked', 'createdAt'])
-          && d.user is string && d.user.size() >= 1 && d.user.size() <= 20
-          && d.userKey is string && d.userKey.size() >= 1 && d.userKey.size() <= 20
-          && d.name is string && d.name.size() >= 1 && d.name.size() <= 40
+          && text(d.user, 1, 20) && text(d.userKey, 1, 20) && text(d.name, 1, 40)
           && d.liked is bool
           && d.createdAt == request.time
-          && swipeId == d.userKey + '__' + d.name;
+          && id == d.userKey + '__' + d.name;
       }
+      allow read: if validRoom(room);
+      allow create, update: if validRoom(room) && validSwipe();
+      allow delete: if validRoom(room);
+    }
 
-      allow read: if validRoom();
-      allow create, update: if validRoom() && validSwipe();
-      allow delete: if validRoom();
+    // rooms/{room}/stars/{userKey}__{name}: a star on a match
+    match /rooms/{room}/stars/{id} {
+      function validStar() {
+        let d = request.resource.data;
+        return d.keys().hasOnly(['user', 'userKey', 'name', 'createdAt'])
+          && d.keys().hasAll(['user', 'userKey', 'name', 'createdAt'])
+          && text(d.user, 1, 20) && text(d.userKey, 1, 20) && text(d.name, 1, 40)
+          && d.createdAt == request.time
+          && id == d.userKey + '__' + d.name;
+      }
+      allow read: if validRoom(room);
+      allow create, update: if validRoom(room) && validStar();
+      allow delete: if validRoom(room);
+    }
+
+    // rooms/{room}/names/{nameKey}: names we added to the deck
+    match /rooms/{room}/names/{id} {
+      function validCustomName() {
+        let d = request.resource.data;
+        return d.keys().hasOnly(['name', 'addedBy', 'createdAt'])
+          && d.keys().hasAll(['name', 'addedBy', 'createdAt'])
+          && text(d.name, 2, 30) && text(d.addedBy, 1, 20)
+          && d.createdAt == request.time;
+      }
+      allow read: if validRoom(room);
+      allow create: if validRoom(room) && validCustomName();
+      allow update, delete: if false;
+    }
+
+    // rooms/{room}/meta/settings (shared last name) and rooms/{room}/meta/final (final pick)
+    match /rooms/{room}/meta/{docId} {
+      function validSettings() {
+        let d = request.resource.data;
+        return d.keys().hasOnly(['lastName', 'updatedBy', 'updatedAt'])
+          && d.keys().hasAll(['lastName', 'updatedBy', 'updatedAt'])
+          && text(d.lastName, 0, 30) && text(d.updatedBy, 1, 20)
+          && d.updatedAt == request.time;
+      }
+      function validFinal() {
+        let d = request.resource.data;
+        return d.keys().hasOnly(['name', 'pickedBy', 'pickedAt'])
+          && d.keys().hasAll(['name', 'pickedBy', 'pickedAt'])
+          && text(d.name, 2, 40) && text(d.pickedBy, 1, 20)
+          && d.pickedAt == request.time;
+      }
+      allow read: if validRoom(room);
+      allow create, update: if validRoom(room)
+        && ((docId == 'settings' && validSettings()) || (docId == 'final' && validFinal()));
+      allow delete: if validRoom(room) && docId == 'final';
     }
 
     // Anything else (including the old connectionTest collection) is denied.

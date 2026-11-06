@@ -2,25 +2,53 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import NAMES from '../data/names'
 import { seededShuffle } from '../lib/shuffle'
 import { userKeyFor } from '../lib/session'
+import AddNameForm from './AddNameForm'
 import NameCard from './NameCard'
 
-export default function SwipeScreen({ room, user, swipes, onSwipe, onUndo, onViewMatches }) {
+export default function SwipeScreen({
+  room,
+  user,
+  lastName,
+  swipes,
+  customNames,
+  onSwipe,
+  onUndo,
+  onAddName,
+  onViewMatches,
+}) {
   const myKey = userKeyFor(user)
   const [leaving, setLeaving] = useState(null)
+  const [pinned, setPinned] = useState(null) // the card on screen, so new names never swap it away
+  const [pendingUndo, setPendingUndo] = useState(null)
   const timer = useRef(null)
 
   // Same person + room always gets the same personal order.
-  const deck = useMemo(() => seededShuffle(NAMES, `${room}:${myKey}`), [room, myKey])
+  const baseDeck = useMemo(() => seededShuffle(NAMES, `${room}:${myKey}`), [room, myKey])
 
-  const { remaining, lastSwiped } = useMemo(() => {
+  const { ordered, lastSwiped } = useMemo(() => {
     const mine = swipes.filter((s) => s.userKey === myKey)
     const done = new Set(mine.map((s) => s.name))
     const last = mine.reduce((a, b) => (!a || b.createdAtMs > a.createdAtMs ? b : a), null)
-    return { remaining: deck.filter((n) => !done.has(n)), lastSwiped: last?.name ?? null }
-  }, [swipes, myKey, deck])
+    const added = [...customNames]
+      .sort((a, b) => a.createdAtMs - b.createdAtMs)
+      .map((c) => c.name)
+      .filter((n) => !done.has(n))
+    return {
+      // Names we added come first, then the shuffled deck.
+      ordered: [...added, ...baseDeck.filter((n) => !done.has(n))],
+      lastSwiped: last?.name ?? null,
+    }
+  }, [swipes, customNames, myKey, baseDeck])
 
-  const current = remaining[0]
-  const position = NAMES.length - remaining.length + 1
+  // Keep the current card stable: only move on when it has been swiped (or an undo brings one back).
+  let current = ordered[0]
+  if (pendingUndo && ordered.includes(pendingUndo)) current = pendingUndo
+  else if (pinned && ordered.includes(pinned)) current = pinned
+  if (pendingUndo && ordered.includes(pendingUndo)) setPendingUndo(null)
+  if ((current ?? null) !== pinned) setPinned(current ?? null)
+
+  const total = NAMES.length + customNames.length
+  const position = total - ordered.length + 1
 
   useEffect(() => () => clearTimeout(timer.current), [])
 
@@ -35,11 +63,13 @@ export default function SwipeScreen({ room, user, swipes, onSwipe, onUndo, onVie
 
   function undo() {
     if (leaving || !lastSwiped) return
+    setPendingUndo(lastSwiped)
     onUndo(lastSwiped)
   }
 
   useEffect(() => {
     function handleKey(e) {
+      if (e.target instanceof HTMLInputElement) return
       if (e.key === 'ArrowRight') decide(true)
       else if (e.key === 'ArrowLeft') decide(false)
     }
@@ -51,7 +81,7 @@ export default function SwipeScreen({ room, user, swipes, onSwipe, onUndo, onVie
     return (
       <section className="swipe done">
         <h2>That&apos;s every name!</h2>
-        <p className="muted">You&apos;ve been through all {NAMES.length} names.</p>
+        <p className="muted">You&apos;ve been through all {total} names.</p>
         <button className="primary" onClick={onViewMatches}>
           See matches
         </button>
@@ -60,6 +90,7 @@ export default function SwipeScreen({ room, user, swipes, onSwipe, onUndo, onVie
             Undo last swipe
           </button>
         )}
+        <AddNameForm onAdd={onAddName} />
       </section>
     )
   }
@@ -67,11 +98,17 @@ export default function SwipeScreen({ room, user, swipes, onSwipe, onUndo, onVie
   return (
     <section className="swipe">
       <p className="progress">
-        Name {position} of {NAMES.length}
+        Name {position} of {total}
       </p>
 
       <div className="card-area">
-        <NameCard key={current} name={current} leaving={leaving} onDecide={decide} />
+        <NameCard
+          key={current}
+          name={current}
+          lastName={lastName}
+          leaving={leaving}
+          onDecide={decide}
+        />
       </div>
 
       <div className="actions">
@@ -85,7 +122,8 @@ export default function SwipeScreen({ room, user, swipes, onSwipe, onUndo, onVie
           ♥
         </button>
       </div>
-      <p className="hint center">Swipe right to like, left to pass.</p>
+      <p className="hint center">Swipe right to like, left to pass. Tap the card for its meaning.</p>
+      <AddNameForm onAdd={onAddName} />
     </section>
   )
 }

@@ -163,13 +163,7 @@
   width: 100%;
   aspect-ratio: 3 / 4;
   max-height: 60dvh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 2px solid var(--ink);
-  border-radius: 24px;
-  background: var(--paper);
-  box-shadow: 0 6px 0 var(--ink);
+  perspective: 1200px;
   touch-action: pan-y;
   user-select: none;
   -webkit-user-select: none;
@@ -259,10 +253,12 @@
 }
 
 .match-list li {
-  padding: 16px 4px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 8px;
   border-bottom: 1px solid var(--line);
-  font-size: 1.4rem;
-  font-weight: 600;
 }
 
 /* Celebration */
@@ -327,5 +323,297 @@
   }
   .card {
     transition: none !important;
+  }
+}
+
+/* Card flip */
+.card-inner {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transition: transform 0.55s cubic-bezier(0.4, 0.2, 0.2, 1);
+}
+
+.card-inner.flipped {
+  transform: rotateY(180deg);
+}
+
+.face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 24px 20px 44px;
+  border: 2px solid var(--ink);
+  border-radius: 24px;
+  background: var(--paper);
+  box-shadow: 0 6px 0 var(--ink);
+  text-align: center;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.back {
+  transform: rotateY(180deg);
+}
+
+.card-fullname {
+  color: var(--muted);
+  font-size: 1.15rem;
+}
+
+.flip-hint {
+  position: absolute;
+  bottom: 16px;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.flip-btn {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  z-index: 2;
+  width: 36px;
+  height: 36px;
+  margin-left: -18px;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  background: var(--paper);
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.stamp {
+  z-index: 2;
+}
+
+.back-name {
+  font-size: 2rem;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.chip {
+  padding: 2px 14px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.meaning {
+  margin: 0;
+  max-width: 92%;
+  font-size: 1.3rem;
+  line-height: 1.35;
+}
+
+.back-full {
+  margin: 0;
+  color: var(--muted);
+}
+
+.back-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+/* Small controls */
+.mini {
+  display: inline-block;
+  padding: 8px 14px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.mini.invert {
+  background: transparent;
+  border-color: var(--paper);
+  color: var(--paper);
+}
+
+.icon {
+  width: 40px;
+  height: 40px;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  background: var(--paper);
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.icon.star.on {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.topbar-actions {
+  display: flex;
+  gap: 16px;
+}
+
+.hint.bad {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.hint.light {
+  color: #bbb;
+}
+
+/* Add a name */
+.add-name {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.add-row {
+  display: flex;
+  width: 100%;
+  gap: 8px;
+}
+
+.add-row input {
+  flex: 1;
+  min-width: 0;
+  padding: 12px;
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+  background: var(--paper);
+  font-size: 1rem;
+}
+
+/* Settings sheet */
+.sheet {
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 24px;
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  border-radius: 24px;
+}
+
+.sheet h2 {
+  margin: 0;
+}
+
+.sheet label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.sheet input {
+  padding: 14px;
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+  background: var(--paper);
+  font-size: 1.1rem;
+}
+
+/* Matches: stars and final pick */
+.final-banner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 20px;
+  padding: 22px 16px;
+  border-radius: 20px;
+  background: var(--ink);
+  color: var(--paper);
+  text-align: center;
+}
+
+.final-label {
+  margin: 0;
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.final-name {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.final-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.match-list li.is-final {
+  background: var(--soft);
+}
+
+.match-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.match-name {
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.match-full {
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.match-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.tag {
+  padding: 1px 8px;
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  font-size: 0.75rem;
+}
+
+.tag.solid {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.match-actions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-inner {
+    transition: none;
   }
 }

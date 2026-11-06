@@ -41,3 +41,23 @@ export function computeMatches(swipes) {
   }
   return matches.sort((a, b) => b.matchedAt - a.matchedAt || a.name.localeCompare(b.name))
 }
+
+// Adds who starred each match and orders the list: most stars first, then newest match.
+export function rankMatches(matches, stars) {
+  const starsByName = new Map()
+  for (const s of stars) {
+    if (!starsByName.has(s.name)) starsByName.set(s.name, new Map())
+    starsByName.get(s.name).set(s.userKey, s.user)
+  }
+  return matches
+    .map((m) => ({
+      ...m,
+      starredBy: [...(starsByName.get(m.name) ?? [])].map(([userKey, user]) => ({ userKey, user })),
+    }))
+    .sort(
+      (a, b) =>
+        b.starredBy.length - a.starredBy.length ||
+        b.matchedAt - a.matchedAt ||
+        a.name.localeCompare(b.name),
+    )
+}
