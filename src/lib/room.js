@@ -8,10 +8,13 @@ import { userKeyFor } from './session'
 //   names/{nameKey}            names we added to the deck ourselves
 //   meta/settings              { lastName }  shared by the room
 //   meta/final                 { name, pickedBy }  our final pick
+//   vetoes/{name}              a match one of us dropped; hidden for both until restored
+//   members/{userKey}          who has joined the room (see members.js)
 
 export const starsCollection = (room) => collection(db, 'rooms', room, 'stars')
 export const customNamesCollection = (room) => collection(db, 'rooms', room, 'names')
 export const metaCollection = (room) => collection(db, 'rooms', room, 'meta')
+export const vetoesCollection = (room) => collection(db, 'rooms', room, 'vetoes')
 
 export const nameKey = (name) => name.trim().toLowerCase().replace(/\s+/g, '-')
 
@@ -60,4 +63,16 @@ export function setFinalPick(room, user, name) {
 
 export function clearFinalPick(room) {
   return deleteDoc(doc(db, 'rooms', room, 'meta', 'final'))
+}
+
+export function addVeto(room, user, name) {
+  return setDoc(doc(db, 'rooms', room, 'vetoes', name), {
+    name,
+    vetoedBy: user,
+    createdAt: serverTimestamp(),
+  })
+}
+
+export function removeVeto(room, name) {
+  return deleteDoc(doc(db, 'rooms', room, 'vetoes', name))
 }

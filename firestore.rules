@@ -13,14 +13,15 @@ service cloud.firestore {
       return value is string && value.size() >= min && value.size() <= max;
     }
 
-    // rooms/{room}/swipes/{userKey}__{name}: one like or pass per person per name
+    // rooms/{room}/swipes/{userKey}__{name}: one like, pass or maybe per person per name
     match /rooms/{room}/swipes/{id} {
       function validSwipe() {
         let d = request.resource.data;
-        return d.keys().hasOnly(['user', 'userKey', 'name', 'liked', 'createdAt'])
-          && d.keys().hasAll(['user', 'userKey', 'name', 'liked', 'createdAt'])
+        return d.keys().hasOnly(['user', 'userKey', 'name', 'liked', 'choice', 'createdAt'])
+          && d.keys().hasAll(['user', 'userKey', 'name', 'liked', 'choice', 'createdAt'])
           && text(d.user, 1, 20) && text(d.userKey, 1, 20) && text(d.name, 1, 40)
-          && d.liked is bool
+          && d.choice in ['like', 'pass', 'maybe']
+          && d.liked == (d.choice == 'like')
           && d.createdAt == request.time
           && id == d.userKey + '__' + d.name;
       }
@@ -78,6 +79,37 @@ service cloud.firestore {
       allow create, update: if validRoom(room)
         && ((docId == 'settings' && validSettings()) || (docId == 'final' && validFinal()));
       allow delete: if validRoom(room) && docId == 'final';
+    }
+
+    // rooms/{room}/members/{userKey}: who has joined the room
+    match /rooms/{room}/members/{id} {
+      function validMember() {
+        let d = request.resource.data;
+        return d.keys().hasOnly(['user', 'userKey', 'createdAt'])
+          && d.keys().hasAll(['user', 'userKey', 'createdAt'])
+          && text(d.user, 1, 20) && text(d.userKey, 1, 20)
+          && d.createdAt == request.time
+          && id == d.userKey;
+      }
+      allow read: if validRoom(room);
+      allow create, update: if validRoom(room) && validMember();
+      allow delete: if false;
+    }
+
+    // rooms/{room}/vetoes/{name}: a match one of us dropped (can be restored)
+    match /rooms/{room}/vetoes/{id} {
+      function validVeto() {
+        let d = request.resource.data;
+        return d.keys().hasOnly(['name', 'vetoedBy', 'createdAt'])
+          && d.keys().hasAll(['name', 'vetoedBy', 'createdAt'])
+          && text(d.name, 2, 40) && text(d.vetoedBy, 1, 20)
+          && d.createdAt == request.time
+          && id == d.name;
+      }
+      allow read: if validRoom(room);
+      allow create: if validRoom(room) && validVeto();
+      allow update: if false;
+      allow delete: if validRoom(room);
     }
 
     // Anything else (including the old connectionTest collection) is denied.

@@ -25,7 +25,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 16px;
+  padding: calc(14px + env(safe-area-inset-top)) 16px 14px;
   border-bottom: 1px solid var(--line);
 }
 
@@ -55,7 +55,7 @@
   position: sticky;
   bottom: 0;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   background: var(--paper);
   border-top: 1px solid var(--line);
   padding-bottom: env(safe-area-inset-bottom);
@@ -164,7 +164,7 @@
   aspect-ratio: 3 / 4;
   max-height: 60dvh;
   perspective: 1200px;
-  touch-action: pan-y;
+  touch-action: none;
   user-select: none;
   -webkit-user-select: none;
   cursor: grab;
@@ -252,11 +252,12 @@
   padding: 0;
 }
 
-.match-list li {
+.match-row {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px 12px;
   padding: 14px 8px;
   border-bottom: 1px solid var(--line);
 }
@@ -565,12 +566,13 @@
   margin-top: 8px;
 }
 
-.match-list li.is-final {
+.match-row.is-final {
   background: var(--soft);
 }
 
 .match-main {
   display: flex;
+  flex: 1 1 150px;
   flex-direction: column;
   gap: 2px;
   min-width: 0;
@@ -607,7 +609,7 @@
 
 .match-actions {
   display: flex;
-  flex-shrink: 0;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
 }
@@ -616,4 +618,197 @@
   .card-inner {
     transition: none;
   }
+}
+
+/* Maybe, round buttons */
+.round {
+  width: 62px;
+  height: 62px;
+}
+
+.round.maybe {
+  width: 52px;
+  height: 52px;
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.actions {
+  gap: 16px;
+}
+
+.stamp-maybe {
+  top: auto;
+  bottom: 64px;
+  left: 50%;
+  margin-left: -42px;
+}
+
+.progress-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.progress.partner {
+  font-size: 0.8rem;
+}
+
+.back-variants {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+/* Review */
+.review {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.segments {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.segments button {
+  padding: 10px 4px;
+  border: none;
+  background: var(--paper);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.segments button.active {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.review-name {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.empty-note {
+  margin-top: 32px;
+}
+
+/* Matches: heading row, soft matches, variants, dropped */
+.matches-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.matches-head h2 {
+  margin: 0;
+}
+
+.soft {
+  margin-top: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.soft h3 {
+  margin: 0;
+}
+
+.variant-group {
+  margin: 10px 0;
+  padding: 8px 10px 2px;
+  border: 2px solid var(--ink);
+  border-radius: 14px;
+}
+
+.variant-label {
+  margin: 0 0 2px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.match-list.inner .match-row:last-child {
+  border-bottom: none;
+}
+
+.dropped {
+  margin-top: 28px;
+}
+
+.dropped summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+/* Setup guard */
+.members {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.member-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip-btn {
+  padding: 8px 16px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: var(--paper);
+  font-weight: 600;
+}
+
+.chip-btn.on {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.warning {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+  padding: 12px 14px;
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+  background: var(--soft);
+}
+
+.warning p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.check {
+  flex-direction: row !important;
+  align-items: center;
+  gap: 10px !important;
+  margin-top: 0 !important;
+  font-weight: 600;
+}
+
+.check input {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  accent-color: #000;
+}
+
+/* Install */
+.install {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 4px;
 }

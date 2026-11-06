@@ -1,10 +1,26 @@
 import { useEffect, useState } from 'react'
 import { onSnapshot } from 'firebase/firestore'
 import { swipesCollection } from '../lib/swipes'
-import { customNamesCollection, metaCollection, starsCollection } from '../lib/room'
+import { membersCollection } from '../lib/members'
+import {
+  customNamesCollection,
+  metaCollection,
+  starsCollection,
+  vetoesCollection,
+} from '../lib/room'
 
-const BASE = { room: null, swipes: [], stars: [], names: [], meta: [], loadedCount: 0, error: null }
-const SLICES = 4
+const BASE = {
+  room: null,
+  swipes: [],
+  stars: [],
+  names: [],
+  meta: [],
+  members: [],
+  vetoes: [],
+  loadedCount: 0,
+  error: null,
+}
+const SLICES = 6
 
 const ms = (value) => value?.toMillis?.() ?? Date.now()
 
@@ -38,7 +54,8 @@ export function useRoom(room) {
         user: d.user,
         userKey: d.userKey,
         name: d.name,
-        liked: d.liked === true,
+        // Older swipes only have liked: true/false.
+        choice: d.choice ?? (d.liked === true ? 'like' : 'pass'),
         createdAtMs: ms(d.createdAt),
       })),
       listen('stars', starsCollection(room), (id, d) => ({
@@ -59,6 +76,16 @@ export function useRoom(room) {
         name: d.name ?? '',
         pickedBy: d.pickedBy ?? '',
       })),
+      listen('members', membersCollection(room), (id, d) => ({
+        id,
+        userKey: id,
+        user: d.user ?? id,
+      })),
+      listen('vetoes', vetoesCollection(room), (id, d) => ({
+        id,
+        name: d.name,
+        vetoedBy: d.vetoedBy,
+      })),
     ]
     return () => {
       unsubscribers.forEach((u) => u())
@@ -75,6 +102,8 @@ export function useRoom(room) {
     swipes: current ? snap.swipes : [],
     stars: current ? snap.stars : [],
     customNames: current ? snap.names : [],
+    members: current ? snap.members : [],
+    vetoes: current ? snap.vetoes : [],
     lastName: settings?.lastName ?? '',
     finalPick: final && final.name ? { name: final.name, pickedBy: final.pickedBy } : null,
   }
