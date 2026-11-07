@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { normalizeRoom, userKeyFor } from '../lib/session'
+import SlideButton from './SlideButton'
 
 // First screen: room code and your name. It looks up who is already in the room, so you can
 // tap your own name instead of typing it, and so adding a third person is a deliberate choice.
@@ -47,7 +48,17 @@ export default function SetupScreen({ initialRoom = '', initialUser = '', lookup
 
   return (
     <main className="setup">
-      <h1>Baby Names</h1>
+      <div className="setup-hero" aria-hidden="true">
+        <span className="orb o1">L</span>
+        <span className="orb o2">E</span>
+        <span className="orb o3">O</span>
+        <span className="ask a1">?</span>
+        <span className="ask a2">?</span>
+      </div>
+      <p className="eyebrow">Baby Names</p>
+      <h1>
+        Find the perfect <span className="hl">name</span> together
+      </h1>
       <p className="muted">
         Swipe through boys&apos; names. When you both like the same one, it&apos;s a match.
       </p>
@@ -131,9 +142,7 @@ export default function SetupScreen({ initialRoom = '', initialUser = '', lookup
           </div>
         )}
 
-        <button type="submit" className="primary" disabled={!canStart}>
-          {wouldBeThird ? 'Add a third person' : 'Start swiping'}
-        </button>
+        <SlideButton disabled={!canStart}>{wouldBeThird ? 'Add a third person' : 'Start swiping'}</SlideButton>
       </form>
     </main>
   )

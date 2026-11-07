@@ -5,15 +5,38 @@
 }
 
 :root {
-  --ink: #000;
-  --paper: #fff;
-  --soft: #f3f3f3;
-  --line: #d4d4d4;
-  --muted: #666;
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  /* Ink and surfaces */
+  --ink: #0c1226;
+  --paper: #ffffff;
+  --muted: #5d6b8c;
+  --line: rgba(12, 18, 38, 0.1);
+  --glass: rgba(255, 255, 255, 0.6);
+  --glass-strong: rgba(255, 255, 255, 0.82);
+
+  /* The blues */
+  --blue-50: #eef5ff;
+  --blue-100: #dce9ff;
+  --blue-200: #c3d9ff;
+  --blue-300: #9cc4ff;
+  --blue-400: #6aa4ff;
+  --blue-500: #3a74ff;
+  --blue-600: #2457e6;
+  --hl: #7cc3ff; /* the highlighter behind a headline word */
+
+  --page-bg:
+    radial-gradient(circle at 12% 6%, rgba(255, 255, 255, 0.75), transparent 38%),
+    radial-gradient(circle at 92% 88%, rgba(255, 255, 255, 0.5), transparent 42%),
+    linear-gradient(168deg, #d3d9ff 0%, #c2d8ff 46%, #a9dcff 100%);
+
+  --shadow-sm: 0 4px 14px rgba(40, 70, 150, 0.12);
+  --shadow-md: 0 14px 34px rgba(40, 70, 150, 0.18);
+  --shadow-lg: 0 26px 64px rgba(30, 55, 140, 0.28);
+
+  font-family: 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   color: var(--ink);
-  background: var(--paper);
+  background: #c4d9ff;
   -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
 }
 
 html,
@@ -24,8 +47,17 @@ body,
 }
 
 body {
-  background: var(--paper);
+  background: transparent;
   overflow-x: hidden;
+}
+
+/* The dreamy backdrop stays put while the page scrolls. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: var(--page-bg);
 }
 
 button,
@@ -40,10 +72,10 @@ button {
 
 button:disabled {
   cursor: not-allowed;
-  opacity: 0.35;
+  opacity: 0.45;
 }
 
 :focus-visible {
-  outline: 3px solid var(--ink);
+  outline: 3px solid var(--blue-500);
   outline-offset: 2px;
 }

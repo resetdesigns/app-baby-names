@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import Icon from './Icon'
 
 // A small inline form for adding a name of our own to the deck.
 // `onAdd` returns an error message, or null when the name was added.
@@ -21,7 +22,7 @@ export default function AddNameForm({ onAdd }) {
   if (!open) {
     return (
       <button className="link" onClick={() => setOpen(true)}>
-        + Add a name
+        <Icon name="plus" size={16} /> Add a name
       </button>
     )
   }

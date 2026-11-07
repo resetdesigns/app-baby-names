@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import './App.css'
+import BottomNav from './components/BottomNav'
 import MatchCelebration from './components/MatchCelebration'
 import MatchesScreen from './components/MatchesScreen'
 import ReviewScreen from './components/ReviewScreen'
@@ -136,17 +137,14 @@ export default function App() {
   return (
     <div className="app">
       <header className="topbar">
-        <div>
-          <strong>{session.user}</strong>
-          <span className="muted"> · room {session.room}</span>
-        </div>
-        <div className="topbar-actions">
-          <button className="link" onClick={() => setShowSettings(true)}>
-            Settings
-          </button>
-          <button className="link" onClick={handleLeave}>
-            Switch
-          </button>
+        <span className="avatar" aria-hidden="true">
+          {session.user.charAt(0).toUpperCase()}
+        </span>
+        <div className="greeting">
+          <p className="hello">
+            Hello, <strong>{session.user}</strong>
+          </p>
+          <p className="room">Room {session.room}</p>
         </div>
       </header>
 
@@ -202,17 +200,14 @@ export default function App() {
         )}
       </main>
 
-      <nav className="tabs">
-        <button className={tab === 'swipe' ? 'active' : ''} onClick={() => setTab('swipe')}>
-          Swipe
-        </button>
-        <button className={tab === 'review' ? 'active' : ''} onClick={() => setTab('review')}>
-          Review
-        </button>
-        <button className={tab === 'matches' ? 'active' : ''} onClick={() => setTab('matches')}>
-          Matches{matches.length > 0 ? ` (${matches.length})` : ''}
-        </button>
-      </nav>
+      <BottomNav
+        active={showSettings ? 'settings' : tab}
+        matchCount={matches.length}
+        onSelect={(id) => {
+          if (id === 'settings') setShowSettings(true)
+          else setTab(id)
+        }}
+      />
 
       {showSettings && (
         <SettingsSheet
@@ -223,6 +218,7 @@ export default function App() {
             setShowSettings(false)
           }}
           onClose={() => setShowSettings(false)}
+          onLeave={handleLeave}
         />
       )}
 
