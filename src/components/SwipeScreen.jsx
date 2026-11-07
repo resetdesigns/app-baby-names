@@ -7,6 +7,15 @@ import AddNameForm from './AddNameForm'
 import Icon from './Icon'
 import NameCard from './NameCard'
 
+const HINT_KEY = 'baby-names:coach-seen'
+const hintSeen = () => {
+  try {
+    return localStorage.getItem(HINT_KEY) === '1'
+  } catch {
+    return true
+  }
+}
+
 const DIRECTION = { like: 'right', pass: 'left', maybe: 'up' }
 const REVISIT_LABEL = { pass: 'passes', maybe: 'maybes' }
 
@@ -26,6 +35,7 @@ export default function SwipeScreen({
 }) {
   const myKey = userKeyFor(user)
   const [leaving, setLeaving] = useState(null)
+  const [showCoach, setShowCoach] = useState(() => !hintSeen())
   const [pinned, setPinned] = useState(null) // the card on screen, so new names never swap it away
   const [pendingUndo, setPendingUndo] = useState(null)
   const [handled, setHandled] = useState(() => new Set()) // answered during this revisit
@@ -79,6 +89,7 @@ export default function SwipeScreen({
 
   function decide(choice) {
     if (leaving || !current) return
+    if (showCoach) dismissCoach()
     setLeaving(DIRECTION[choice])
     buzz(choice === 'maybe' ? BUZZ.maybe : BUZZ.swipe)
     timer.current = setTimeout(() => {
@@ -86,6 +97,15 @@ export default function SwipeScreen({
       if (revisit) setHandled((prev) => new Set(prev).add(current))
       setLeaving(null)
     }, 180)
+  }
+
+  function dismissCoach() {
+    setShowCoach(false)
+    try {
+      localStorage.setItem(HINT_KEY, '1')
+    } catch {
+      // Not saving the hint is fine; it just shows again next time.
+    }
   }
 
   function undo() {
@@ -157,6 +177,16 @@ export default function SwipeScreen({
           <p className="progress glass">
             Name {position} of {total}
           </p>
+          <span
+            className="progress-bar"
+            role="progressbar"
+            aria-label="Names swiped"
+            aria-valuemin={0}
+            aria-valuemax={total}
+            aria-valuenow={total - ordered.length}
+          >
+            <span className="progress-fill" style={{ width: `${((total - ordered.length) / total) * 100}%` }} />
+          </span>
           {others.map((o) => (
             <p key={o.user} className="progress partner">
               {o.user} has swiped {o.count} of {total}
@@ -195,9 +225,21 @@ export default function SwipeScreen({
           <Icon name="heart" size={32} filled />
         </button>
       </div>
-      <p className="hint center">
-        Swipe right to like, left to pass, up for maybe. Tap the card for its meaning.
-      </p>
+      {showCoach && !revisit ? (
+        <div className="coach" role="note">
+          <p>
+            <strong>Swipe right</strong> to like, <strong>left</strong> to pass, <strong>up</strong> for
+            maybe. Tap the card for its meaning.
+          </p>
+          <button className="mini" onClick={dismissCoach}>
+            Got it
+          </button>
+        </div>
+      ) : (
+        <p className="hint center">
+          Swipe right to like, left to pass, up for maybe. Tap the card for its meaning.
+        </p>
+      )}
       {!revisit && <AddNameForm onAdd={onAddName} />}
     </section>
   )

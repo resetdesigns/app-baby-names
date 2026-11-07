@@ -1,3 +1,48 @@
+@font-face {
+  color-scheme: light dark;
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/poppins-latin-400-normal.woff2') format('woff2');
+}
+
+@font-face {
+  color-scheme: light dark;
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/poppins-latin-500-normal.woff2') format('woff2');
+}
+
+@font-face {
+  color-scheme: light dark;
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/poppins-latin-600-normal.woff2') format('woff2');
+}
+
+@font-face {
+  color-scheme: light dark;
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/poppins-latin-700-normal.woff2') format('woff2');
+}
+
+@font-face {
+  color-scheme: light dark;
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url('/fonts/poppins-latin-800-normal.woff2') format('woff2');
+}
+
 *,
 *::before,
 *::after {
@@ -8,7 +53,9 @@
   /* Ink and surfaces */
   --ink: #0c1226;
   --paper: #ffffff;
-  --muted: #5d6b8c;
+  --muted: #4a5876;
+  --blue-text: #2457e6;
+  --on-accent: #ffffff;
   --line: rgba(12, 18, 38, 0.1);
   --glass: rgba(255, 255, 255, 0.6);
   --glass-strong: rgba(255, 255, 255, 0.82);
@@ -32,6 +79,7 @@
   --shadow-md: 0 14px 34px rgba(40, 70, 150, 0.18);
   --shadow-lg: 0 26px 64px rgba(30, 55, 140, 0.28);
 
+  color-scheme: light dark;
   font-family: 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   color: var(--ink);
   background: #c4d9ff;
@@ -68,6 +116,7 @@ input {
 
 button {
   cursor: pointer;
+  touch-action: manipulation;
 }
 
 button:disabled {
@@ -78,4 +127,30 @@ button:disabled {
 :focus-visible {
   outline: 3px solid var(--blue-500);
   outline-offset: 2px;
+}
+
+/* Dark mode follows the phone's setting: the same blues, but deep navy. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #eaf0ff;
+    --paper: #18214a;
+    --muted: #a6b3d6;
+    --line: rgba(255, 255, 255, 0.12);
+    --glass: rgba(255, 255, 255, 0.09);
+    --glass-strong: rgba(26, 37, 82, 0.78);
+    --blue-50: #1c2757;
+    --blue-100: #26346f;
+    --blue-200: #35458f;
+    --blue-300: #4a62b8;
+    --blue-text: #8db4ff;
+    --hl: #2f5fd8;
+    --page-bg:
+      radial-gradient(circle at 12% 6%, rgba(90, 120, 255, 0.28), transparent 40%),
+      radial-gradient(circle at 92% 88%, rgba(60, 170, 255, 0.2), transparent 45%),
+      linear-gradient(168deg, #0d1230 0%, #121c47 48%, #0e2f55 100%);
+    --shadow-sm: 0 4px 14px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 14px 34px rgba(0, 0, 0, 0.38);
+    --shadow-lg: 0 26px 64px rgba(0, 0, 0, 0.5);
+    background: #0e1433;
+  }
 }

@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useOnline } from './hooks/useOnline'
 import './App.css'
 import BottomNav from './components/BottomNav'
+import DailyQuote from './components/DailyQuote'
+import { markQuoteSeen, quoteDue, quoteForDay, todayKey } from './lib/dailyQuote'
 import MatchCelebration from './components/MatchCelebration'
 import MatchesScreen from './components/MatchesScreen'
 import ReviewScreen from './components/ReviewScreen'
@@ -34,6 +37,13 @@ import {
 } from './lib/session'
 import { computeMatches, computeSoftMatches, rankMatches, removeSwipe, saveSwipe } from './lib/swipes'
 
+// "Sam liked it too", or both names when the match arrived while you were away.
+function matchCaption(match, myKey) {
+  const others = (match.likedBy ?? []).filter((l) => l.userKey !== myKey).map((l) => l.user)
+  if (others.length === 0) return undefined
+  return `${others.join(' and ')} liked it too. You both love this one.`
+}
+
 const BASE_NAMES_LOWER = new Set(NAMES.map((n) => n.toLowerCase()))
 
 export default function App() {
@@ -44,7 +54,9 @@ export default function App() {
   const [seenFinal, setSeenFinal] = useState(() => (session ? loadSeenFinal(session.room) : null))
   const [showSettings, setShowSettings] = useState(false)
   const [actionError, setActionError] = useState(null)
+  const [quoteDay, setQuoteDay] = useState(null) // the date key to show a quote for, or null
   const install = useInstall()
+  const online = useOnline()
 
   const { swipes, stars, customNames, members, vetoes, lastName, finalPick, ready, error } = useRoom(
     session?.room ?? null,
@@ -76,6 +88,20 @@ export default function App() {
     ? matches.filter((m) => !seen.has(m.name)).sort((a, b) => a.matchedAt - b.matchedAt)
     : []
   const finalUnseen = ready && finalPick && finalPick.name !== seenFinal
+
+  // Once per person per day: when the app opens, or comes back to the front on a new day.
+  useEffect(() => {
+    if (!session) return undefined
+    const userKey = userKeyFor(session.user)
+    const check = () => {
+      const day = todayKey()
+      if (quoteDue(session.room, userKey, day)) setQuoteDay((current) => current ?? day)
+    }
+    check()
+    const onVisible = () => document.visibilityState === 'visible' && check()
+    document.addEventListener('visibilitychange', onVisible)
+    return () => document.removeEventListener('visibilitychange', onVisible)
+  }, [session])
 
   // Record that this person has joined the room (older rooms get this the next time they open it).
   useEffect(() => {
@@ -148,7 +174,13 @@ export default function App() {
         </div>
       </header>
 
-      {problem && (
+      {!online && (
+        <p className="status-pill" role="status">
+          <span className="status-dot" aria-hidden="true" /> Offline. Your swipes will sync when you&apos;re back.
+        </p>
+      )}
+
+      {problem && online && (
         <p className="banner" role="alert">
           Couldn&apos;t reach the database: {problem.message}
         </p>
@@ -156,7 +188,15 @@ export default function App() {
 
       <main className="content">
         {!ready && !error ? (
-          <p className="muted center">Loading…</p>
+          <div className="skeleton" role="status" aria-label="Loading your names">
+            <span className="sk-chip" />
+            <span className="sk-card" />
+            <span className="sk-row">
+              <span className="sk-dot" />
+              <span className="sk-dot" />
+              <span className="sk-dot" />
+            </span>
+          </div>
         ) : tab === 'swipe' ? (
           <SwipeScreen
             key={revisit ?? 'new'}
@@ -222,7 +262,18 @@ export default function App() {
         />
       )}
 
-      {finalUnseen ? (
+      {quoteDay && (
+        <DailyQuote
+          user={session.user}
+          quote={quoteForDay(quoteDay)}
+          onProceed={() => {
+            markQuoteSeen(session.room, myKey, quoteDay)
+            setQuoteDay(null)
+          }}
+        />
+      )}
+
+      {quoteDay ? null : finalUnseen ? (
         <MatchCelebration
           title="It's decided!"
           name={fullNameFor(finalPick.name, lastName)}
@@ -238,6 +289,7 @@ export default function App() {
         unseen.length > 0 && (
           <MatchCelebration
             name={unseen[0].name}
+            caption={matchCaption(unseen[0], myKey)}
             moreCount={unseen.length - 1}
             onContinue={() => markSeen([unseen[0].name])}
             onViewAll={() => {

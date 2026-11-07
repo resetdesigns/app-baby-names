@@ -30,16 +30,19 @@ export function removeSwipe(room, user, name) {
 // Returns newest match first.
 export function computeMatches(swipes) {
   const byName = new Map()
+  const likerNames = new Map()
   for (const s of swipes) {
     if (s.choice !== 'like') continue
     if (!byName.has(s.name)) byName.set(s.name, new Map())
     byName.get(s.name).set(s.userKey, s.createdAtMs)
+    likerNames.set(`${s.name}|${s.userKey}`, s.user)
   }
   const matches = []
   for (const [name, likers] of byName) {
     if (likers.size < 2) continue
     const matchedAt = Math.max(...likers.values())
-    matches.push({ name, matchedAt })
+    const likedBy = [...likers.keys()].map((userKey) => ({ userKey, user: likerNames.get(`${name}|${userKey}`) }))
+    matches.push({ name, matchedAt, likedBy })
   }
   return matches.sort((a, b) => b.matchedAt - a.matchedAt || a.name.localeCompare(b.name))
 }
