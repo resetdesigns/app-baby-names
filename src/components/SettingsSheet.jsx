@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { canVibrate, hapticsEnabled, setHapticsEnabled } from '../lib/haptics'
 
 // Settings: the shared last name, plus per-device options (install, vibration).
-export default function SettingsSheet({ lastName, install, onSave, onClose }) {
+export default function SettingsSheet({ lastName, install, onSave, onClose, onLeave }) {
   const [value, setValue] = useState(lastName)
   const [vibrate, setVibrate] = useState(hapticsEnabled)
 
@@ -14,7 +14,9 @@ export default function SettingsSheet({ lastName, install, onSave, onClose }) {
   return (
     <div className="overlay" role="dialog" aria-modal="true" aria-label="Settings">
       <form className="sheet" onSubmit={handleSubmit}>
-        <h2>Settings</h2>
+        <h2>
+          <span className="hl">Settings</span>
+        </h2>
         <label>
           Your baby&apos;s last name
           <input
@@ -69,6 +71,9 @@ export default function SettingsSheet({ lastName, install, onSave, onClose }) {
         </button>
         <button type="button" className="ghost" onClick={onClose}>
           Cancel
+        </button>
+        <button type="button" className="link leave" onClick={onLeave}>
+          Switch person or room
         </button>
       </form>
     </div>

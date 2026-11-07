@@ -4,6 +4,7 @@ import { fullNameFor } from '../lib/room'
 import { userKeyFor } from '../lib/session'
 import { buildShareText, shareList } from '../lib/shareText'
 import { canSpeak, speak } from '../lib/speak'
+import Icon from './Icon'
 
 // Keeps ranking order, but puts spellings of the same name together.
 function groupMatches(matches) {
@@ -35,7 +36,7 @@ function MatchRow({ m, myKey, lastName, isFinal, onToggleStar, onPick, onDrop })
           {!both &&
             others.map((s) => (
               <span key={s.userKey} className="tag">
-                ★ {s.user}
+                <Icon name="star" size={11} filled /> {s.user}
               </span>
             ))}
           {isFinal && <span className="tag solid">Final pick</span>}
@@ -48,7 +49,7 @@ function MatchRow({ m, myKey, lastName, isFinal, onToggleStar, onPick, onDrop })
             onClick={() => speak(fullNameFor(m.name, lastName))}
             aria-label={`Hear ${m.name}`}
           >
-            ♪
+            <Icon name="volume" size={18} />
           </button>
         )}
         <button
@@ -57,7 +58,7 @@ function MatchRow({ m, myKey, lastName, isFinal, onToggleStar, onPick, onDrop })
           aria-pressed={mine}
           aria-label={mine ? `Remove your star from ${m.name}` : `Star ${m.name}`}
         >
-          {mine ? '★' : '☆'}
+          <Icon name="star" size={18} filled={mine} />
         </button>
         {!isFinal && (
           <>
@@ -101,13 +102,15 @@ export default function MatchesScreen({
 
   const banner = finalPick && (
     <div className="final-banner">
-      <p className="final-label">Our baby boy</p>
+      <p className="final-label">
+        <Icon name="sparkle" size={14} filled /> Our baby boy
+      </p>
       <p className="final-name">{fullNameFor(finalPick.name, lastName)}</p>
       <p className="hint light">Chosen by {finalPick.pickedBy}</p>
       <div className="final-actions">
         {canSpeak && (
           <button className="mini invert" onClick={() => speak(fullNameFor(finalPick.name, lastName))}>
-            Hear it
+            <Icon name="volume" size={16} /> Hear it
           </button>
         )}
         <button className="mini invert" onClick={onClearPick}>
@@ -137,6 +140,9 @@ export default function MatchesScreen({
 
       {matches.length === 0 ? (
         <div className="empty">
+          <span className="empty-badge" aria-hidden="true">
+            <Icon name="heart" size={36} />
+          </span>
           <h2>No matches yet</h2>
           <p className="muted">When you both like the same name, it shows up here.</p>
         </div>
@@ -144,10 +150,10 @@ export default function MatchesScreen({
         <>
           <div className="matches-head">
             <h2>
-              {matches.length} {matches.length === 1 ? 'match' : 'matches'}
+              {matches.length} <span className="hl">{matches.length === 1 ? 'match' : 'matches'}</span>
             </h2>
             <button className="mini" onClick={handleShare}>
-              Share list
+              <Icon name="share" size={16} /> Share list
             </button>
           </div>
           {shareNote && (

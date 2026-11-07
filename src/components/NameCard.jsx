@@ -3,6 +3,23 @@ import DETAILS from '../data/nameDetails'
 import { otherSpellings } from '../data/variants'
 import { fullNameFor } from '../lib/room'
 import { canSpeak, speak } from '../lib/speak'
+import Icon from './Icon'
+
+// Soft blue gradients. Each name always gets the same one.
+const GRADIENTS = [
+  ['#d4e3ff', '#9ec5ff'],
+  ['#dcdcff', '#a7c3ff'],
+  ['#c4e8ff', '#8fb9ff'],
+  ['#cdd9ff', '#a9b4ff'],
+  ['#c6f0ff', '#8cc5ff'],
+  ['#d6e5ff', '#7fb0ff'],
+]
+
+function gradientFor(name) {
+  let h = 0
+  for (const ch of name) h = (h * 31 + ch.charCodeAt(0)) >>> 0
+  return GRADIENTS[h % GRADIENTS.length]
+}
 
 const THRESHOLD = 90 // pixels dragged before a swipe counts
 const TAP_SLOP = 6 // less movement than this is a tap, which flips the card
@@ -24,6 +41,7 @@ export default function NameCard({ name, lastName, leaving, onDecide }) {
   const details = DETAILS[name]
   const spellings = otherSpellings(name)
   const fullName = fullNameFor(name, lastName)
+  const [from, to] = gradientFor(name)
 
   function handlePointerDown(e) {
     if (leaving) return
@@ -83,14 +101,28 @@ export default function NameCard({ name, lastName, leaving, onDecide }) {
       onPointerCancel={handlePointerCancel}
     >
       <div className={`card-inner${flipped ? ' flipped' : ''}`}>
-        <div className="face front" aria-hidden={flipped}>
-          <div className="card-name">{name}</div>
-          {lastName && <div className="card-fullname">{fullName}</div>}
-          <div className="flip-hint">Tap for meaning</div>
+        <div
+          className="face front"
+          aria-hidden={flipped}
+          style={{ '--c1': from, '--c2': to }}
+        >
+          <span className="card-initial" aria-hidden="true">
+            {name.charAt(0)}
+          </span>
+          <span className="bubble b1" aria-hidden="true" />
+          <span className="bubble b2" aria-hidden="true" />
+          <span className="bubble b3" aria-hidden="true" />
+          <div className="card-text">
+            <div className="card-name">{name}</div>
+            {lastName && <div className="card-fullname glass">{fullName}</div>}
+          </div>
+          <div className="flip-hint glass">Tap for meaning</div>
         </div>
 
         <div className="face back" aria-hidden={!flipped}>
-          <div className="back-name">{name}</div>
+          <div className="back-name">
+            <span className="hl">{name}</span>
+          </div>
           {details ? (
             <>
               <span className="chip">{details[0]}</span>
@@ -111,7 +143,7 @@ export default function NameCard({ name, lastName, leaving, onDecide }) {
                 onPointerDown={stop}
                 onClick={() => speak(fullName)}
               >
-                Hear it
+                <Icon name="volume" size={16} /> Hear it
               </button>
             )}
             <a
@@ -122,7 +154,7 @@ export default function NameCard({ name, lastName, leaving, onDecide }) {
               tabIndex={flipped ? 0 : -1}
               onPointerDown={stop}
             >
-              Look it up ↗
+              Look it up <Icon name="external" size={16} />
             </a>
           </div>
           <div className="flip-hint">Tap to flip back</div>
@@ -130,13 +162,13 @@ export default function NameCard({ name, lastName, leaving, onDecide }) {
       </div>
 
       <span className="stamp stamp-like" style={{ opacity: likeOpacity }}>
-        LIKE
+        <Icon name="heart" size={16} filled /> LIKE
       </span>
       <span className="stamp stamp-pass" style={{ opacity: passOpacity }}>
-        PASS
+        <Icon name="x" size={16} strokeWidth={2.6} /> PASS
       </span>
       <span className="stamp stamp-maybe" style={{ opacity: maybeOpacity }}>
-        MAYBE
+        <Icon name="help" size={16} strokeWidth={2.6} /> MAYBE
       </span>
       <button
         className="flip-btn"
@@ -144,7 +176,7 @@ export default function NameCard({ name, lastName, leaving, onDecide }) {
         onClick={() => setFlipped((f) => !f)}
         aria-label={flipped ? 'Show the name' : 'Show origin and meaning'}
       >
-        {flipped ? '↺' : 'ⓘ'}
+        <Icon name={flipped ? 'flip' : 'info'} size={18} />
       </button>
     </div>
   )

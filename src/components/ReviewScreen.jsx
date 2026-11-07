@@ -29,6 +29,9 @@ export default function ReviewScreen({ swipes, user, lastName, onChange, onRevis
 
   return (
     <section className="review">
+      <h2 className="page-title">
+        Your <span className="hl">answers</span>
+      </h2>
       <div className="segments" role="tablist" aria-label="Your answers">
         {SEGMENTS.map((s) => (
           <button

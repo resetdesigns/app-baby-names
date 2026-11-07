@@ -1,9 +1,10 @@
 import { useEffect } from 'react'
 import confetti from 'canvas-confetti'
 import { BUZZ, buzz } from '../lib/haptics'
+import Icon from './Icon'
 
 function fireConfetti() {
-  const base = { disableForReducedMotion: true, colors: ['#000000', '#ffffff', '#888888'] }
+  const base = { disableForReducedMotion: true, colors: ['#3a74ff', '#7cc3ff', '#ffffff', '#c3d9ff', '#0c1226'] }
   confetti({ ...base, particleCount: 110, spread: 80, origin: { y: 0.6 } })
   return setTimeout(() => {
     confetti({ ...base, particleCount: 70, spread: 120, startVelocity: 35, origin: { y: 0.55 } })
@@ -31,8 +32,13 @@ export default function MatchCelebration({
   return (
     <div className="overlay" role="dialog" aria-modal="true" aria-label={title}>
       <div className="pop">
+        <span className="pop-badge" aria-hidden="true">
+          <Icon name="heart" size={34} filled />
+        </span>
         <p className="pop-title">{title}</p>
-        <p className="pop-name">{name}</p>
+        <p className="pop-name">
+          <span className="hl">{name}</span>
+        </p>
         <p className="muted">{caption}</p>
         <button className="primary" onClick={onContinue}>
           {label}

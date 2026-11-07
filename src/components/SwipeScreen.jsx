@@ -4,6 +4,7 @@ import { BUZZ, buzz } from '../lib/haptics'
 import { seededShuffle } from '../lib/shuffle'
 import { userKeyFor } from '../lib/session'
 import AddNameForm from './AddNameForm'
+import Icon from './Icon'
 import NameCard from './NameCard'
 
 const DIRECTION = { like: 'right', pass: 'left', maybe: 'up' }
@@ -145,15 +146,15 @@ export default function SwipeScreen({
       {revisit ? (
         <>
           <button className="link" onClick={onExitRevisit}>
-            ← Back to new names
+            <Icon name="back" size={16} /> Back to new names
           </button>
-          <p className="progress">
+          <p className="progress glass">
             Revisiting your {REVISIT_LABEL[revisit]} · {ordered.length} left
           </p>
         </>
       ) : (
         <div className="progress-block">
-          <p className="progress">
+          <p className="progress glass">
             Name {position} of {total}
           </p>
           {others.map((o) => (
@@ -165,29 +166,33 @@ export default function SwipeScreen({
       )}
 
       <div className="card-area">
-        <NameCard
-          key={current}
-          name={current}
-          lastName={lastName}
-          leaving={leaving}
-          onDecide={decide}
-        />
+        <div className="card-stack">
+          {ordered.length > 2 && <span className="stack-layer s2" aria-hidden="true" />}
+          {ordered.length > 1 && <span className="stack-layer s1" aria-hidden="true" />}
+          <NameCard
+            key={current}
+            name={current}
+            lastName={lastName}
+            leaving={leaving}
+            onDecide={decide}
+          />
+        </div>
       </div>
 
       <div className="actions">
         <button className="round pass" onClick={() => decide('pass')} aria-label="Pass">
-          ✕
+          <Icon name="x" size={28} strokeWidth={2.4} />
         </button>
         <button className="round maybe" onClick={() => decide('maybe')} aria-label="Maybe">
-          ?
+          <Icon name="help" size={24} strokeWidth={2.4} />
         </button>
         {!revisit && (
           <button className="round undo" onClick={undo} disabled={!lastSwiped} aria-label="Undo">
-            ↶
+            <Icon name="undo" size={20} />
           </button>
         )}
         <button className="round like" onClick={() => decide('like')} aria-label="Like">
-          ♥
+          <Icon name="heart" size={32} filled />
         </button>
       </div>
       <p className="hint center">
